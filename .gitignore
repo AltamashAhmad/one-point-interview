@@ -1,0 +1,40 @@
+# Environment files — NEVER commit these
+.env
+.env.local
+.env.*.local
+
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Build outputs
+build/
+dist/
+.next/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# Firebase service account key — NEVER commit
+*service-account*.json
+firebase-adminsdk*.json
+*firebase-adminsdk*.json
+one-point-interview-ai-*.json
+
+# External Question Banks / Repositories
+awesome-low-level-design/
+interview-company-wise-problems/
+leetcode-companywise-interview-questions/
+system-design-primer/
+Archive.zip
+study/
