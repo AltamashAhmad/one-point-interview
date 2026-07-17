@@ -12,7 +12,7 @@
 
 One Point Interview AI simulates real-world engineering interviews. Practice **Data Structures & Algorithms**, **System Design**, and **Low-Level Design** with an AI that does not just give you the answer. It pushes you to think, communicate, write code, and improve like a senior engineer.
 
-![One Point Interview AI Demo](assets/best_landing_hero.png)
+![One Point Interview AI Demo](assets/0_new_hero.png)
 
 </div>
 
@@ -39,17 +39,43 @@ This platform bridges that gap by providing a **conversational, context-aware AI
 
 ## 📸 Platform Walkthrough
 
-### 1. Seamless Roadmap Integration
-Start an interview directly from the interactive DSA roadmap, then open the code editor and request a deep code audit when your implementation is ready.
-![Roadmap Model Selection](assets/best_roadmap.png)
+### 1. Seamless Landing & Setup
+Get started instantly from the landing page.
+![Landing Page](assets/1_landing_hero.png)
 
-### 2. Auto-Resuming Interview Sessions
-Your active sessions are seamlessly resumed when you navigate back. Code, chat, and timers remain perfectly in sync.
-![Active Session](assets/best_interview_chat.png)
+### 2. Learn & Practice Modes
+If you're not ready for a timed interview, start an un-timed AI tutoring session to learn step-by-step.
+![Learn & Practice](assets/2_learn_practice.png)
 
-### 3. "New Session" Fast Retry
-Start a clean, brand-new session for a roadmap question with a single click from the hamburger menu.
-![New Session](assets/new_session_started.png)
+### 3. Configurable Interviews
+Tailor your interview exactly how you want it—choose the target company, difficulty, and the AI evaluator model.
+![Configure Session](assets/3_configure_session.png)
+
+### 4. Specialized AI Models
+We utilize heavily optimized, domain-specific AI models to drive the chat engine depending on your task.
+![AI Models](assets/4_ai_model.png)
+![Model Selector Options](assets/7_model_selector.png)
+
+### 5. Active Interview Sessions
+Your active sessions are completely synced. The interviewer adapts dynamically to your code submissions and asks intelligent follow-up questions.
+![Active Session](assets/5_active_interview.png)
+![Active Chat Interface](assets/6_active_chat.png)
+
+### 6. Detailed AI Scorecards
+After finishing a timed session, get a detailed evaluation of your communication, complexity, and problem-solving skills with a final Hire/No-Hire verdict.
+![Scorecard](assets/8_scorecard.png)
+
+### 7. Comprehensive Interview History
+Every session is securely saved. You can always review past interviews, scorecards, and AI feedback anytime, anywhere.
+![Interview History](assets/9_interview_history.png)
+
+### 8. Interactive Roadmap
+The roadmap dynamically tracks your progress. Check off questions as you solve them or start new AI tutor sessions for any problem.
+![NeetCode 150 Roadmap](assets/10_neetcode_roadmap.png)
+
+### 9. Comprehensive Admin Dashboard
+Monitor platform usage, review new access requests, manage users, and track active sessions globally.
+![Admin Panel](assets/11_admin_panel.png)
 
 ---
 
