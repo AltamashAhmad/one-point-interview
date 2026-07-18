@@ -35,6 +35,9 @@ This platform bridges that gap by providing a **conversational, context-aware AI
 - 📊 **Automated Scorecards**: At the conclusion of a timed interview, a secondary LLM pipeline generates a markdown-based scorecard evaluating the user's communication, problem-solving speed, and code optimality.
 - 💬 **Rich Markdown Chat**: Support for syntax-highlighted code blocks and Mermaid.js diagrams directly in the chat interface.
 
+- 🏢 **Mock It: Full Company Interview Loop**: Simulate a complete 4-round FAANG onsite loop (2x DSA, 1x System Design, 1x Managerial). This mode strings together specialized LLM evaluator contexts to mimic a full grueling 4-hour onsite interview block.
+- 🔐 **Secure Admin Portal**: Built-in role-based access control (RBAC) to manage users, monitor API limits, and track active sessions globally.
+
 ---
 
 ## 📸 Platform Walkthrough
@@ -72,10 +75,6 @@ Every session is securely saved. You can always review past interviews, scorecar
 ### 8. Interactive Roadmap
 The roadmap dynamically tracks your progress. Check off questions as you solve them or start new AI tutor sessions for any problem.
 ![NeetCode 150 Roadmap](assets/10_neetcode_roadmap.png)
-
-### 9. Comprehensive Admin Dashboard
-Monitor platform usage, review new access requests, manage users, and track active sessions globally.
-![Admin Panel](assets/11_admin_panel.png)
 
 ---
 
@@ -134,6 +133,9 @@ echo "PORT=8080" > .env
 echo "OPI_SERVICES_API_KEY=your_key_here" >> .env
 echo "OPI_BACKUP_API_KEY=your_key_here" >> .env
 echo "OPI_PRIMARY_API_KEY=your_key_here" >> .env
+
+# ADD FIREBASE CREDENTIALS
+# Download your Firebase Admin serviceAccountKey.json and place it in this backend directory!
 ```
 
 ### 4. Run Locally
