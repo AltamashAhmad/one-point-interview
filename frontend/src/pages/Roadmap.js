@@ -37,7 +37,7 @@ export default function Roadmap({ adminPromptMode }) {
   useEffect(() => {
     async function fetchCompleted() {
       try {
-        const [history, profile] = await Promise.all([getHistory(), getMyProfile()]);
+        const [history, profile] = await Promise.all([getHistory({ isRoadmap: true }), getMyProfile()]);
         setHistoryRecords(history);
         const titles = new Set(history.map(h => h.questionTitle).filter(Boolean));
         setCompletedTitles(titles);
@@ -106,7 +106,8 @@ export default function Roadmap({ adminPromptMode }) {
         interviewType: type,
         questionSeed: selectedQuestion.title,
         model: selectedModel.id,
-        language: selectedLanguage
+        language: selectedLanguage,
+        isRoadmap: true
       }
     });
   };

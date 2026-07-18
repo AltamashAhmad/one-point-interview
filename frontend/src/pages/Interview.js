@@ -25,9 +25,13 @@ export default function Interview() {
   const roundIndex   = searchParams.get('roundIndex');
   const sessionIdFromUrl = searchParams.get('session');
   
+  const isRoadmap    = searchParams.get('isRoadmap') === 'true';
+  
   const { user, refreshUserProfile, setWallDismissed } = useAuth();
   const config       = TYPE_CONFIG[type];
   const isTutor      = config?.isTutor || false;
+
+  const apiOptions   = { isLoop: !!loopId, isRoadmap, isTutor };
 
   const userName = user?.displayName?.split(' ')[0] || user?.email?.split('@')[0] || 'there';
   
@@ -182,7 +186,7 @@ export default function Interview() {
         questionTitle: response.questionTitle || null,
         questionLink:  response.questionLink  || null,
       };
-      saveSession(newSessionId, type, cfg.model, updatedMessages, meta, !!loopId).catch(console.error);
+      saveSession(newSessionId, type, cfg.model, updatedMessages, meta, apiOptions).catch(console.error);
 
       if (loopId) {
         updateLoopRound(loopId, roundIndex, 'in-progress', null, newSessionId).catch(console.error);
@@ -215,7 +219,7 @@ export default function Interview() {
       }
 
       setIsLoading(true);
-      getHistoryById(sId, !!loopId).then(data => {
+      getHistoryById(sId, apiOptions).then(data => {
         setMessages(data.messages || []);
         setSessionId(sId);
         setSessionConfig({
@@ -247,14 +251,14 @@ export default function Interview() {
       setHasCheckedAutoResume(true);
       setIsCheckingHistory(true);
       
-      if (searchParams.get('loopId')) {
-        // Do not auto-resume global sessions if this is a loop round
+      if (searchParams.get('loopId') || isRoadmap) {
+        // Do not auto-resume global sessions if this is a loop round or roadmap session
         setIsCheckingHistory(false);
         setIsLoading(false);
         return;
       }
 
-      // Global auto-resume from history
+      // Global auto-resume from history (only normal mock interviews, no loops/roadmap/tutor)
       getHistory().then(historyRecords => {
         let activeSession;
         const seed = location.state?.questionSeed;
@@ -280,7 +284,7 @@ export default function Interview() {
           p.set('session', activeSession.id);
           window.history.replaceState({}, document.title, `${location.pathname}?${p.toString()}`);
           setIsLoading(true);
-          getHistoryById(activeSession.id, !!loopId).then(data => {
+          getHistoryById(activeSession.id, apiOptions).then(data => {
             setMessages(data.messages || []);
             setSessionId(activeSession.id);
             setSessionConfig({
@@ -393,7 +397,7 @@ export default function Interview() {
       ];
 
       setMessages(finalMessages);
-      saveSession(sessionId, type, selectedModel, finalMessages, {}, !!loopId).catch(console.error);
+      saveSession(sessionId, type, selectedModel, finalMessages, {}, apiOptions).catch(console.error);
     } catch (err) {
       const msg = err.response?.data?.error || err.message || 'Failed to audit code. Please try again.';
       setError(msg);
@@ -430,7 +434,7 @@ export default function Interview() {
 
       const finalMessages = [...newMessages, { role: 'assistant', content: response.content }];
       setMessages(finalMessages);
-      saveSession(sessionId, type, selectedModel, finalMessages, {}, !!loopId).catch(console.error);
+      saveSession(sessionId, type, selectedModel, finalMessages, {}, apiOptions).catch(console.error);
     } catch (err) {
       // If we hit a quota limit, tell the AuthContext to re-fetch the profile immediately
       // This will instantly trigger the AccessWall full-screen overlay from App.js!
@@ -526,10 +530,17 @@ export default function Interview() {
 
     setIsGeneratingScorecard(true);
     try {
-      await generateScorecard(sessionId, scorecardModel, !!loopId);
+      await generateScorecard(sessionId, scorecardModel, apiOptions);
       clearSessionArtifacts(sessionId); // remove timer + editor code for this session
       clear(); // Wipe local storage session data upon successful completion
-      const queryParams = loopId ? `?loopId=${loopId}&roundIndex=${roundIndex}` : '';
+      const params = new URLSearchParams();
+      if (loopId) {
+        params.append('loopId', loopId);
+        params.append('roundIndex', roundIndex);
+      }
+      if (isRoadmap) params.append('isRoadmap', 'true');
+      if (isTutor) params.append('isTutor', 'true');
+      const queryParams = params.toString() ? `?${params.toString()}` : '';
       navigate(`/scorecard/${sessionId}${queryParams}`, { replace: true });
     } catch (err) {
       console.error(err);

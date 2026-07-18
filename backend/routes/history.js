@@ -9,7 +9,12 @@ const { generateRouterResponse, isRouterModel } = require('../services/routerAi'
 
 const db = admin.firestore();
 
-const getCollectionName = (req) => req.query.isLoop === 'true' ? 'loop_interviews' : 'interviews';
+const getCollectionName = (req) => {
+  if (req.query.isLoop === 'true') return 'loop_interviews';
+  if (req.query.isRoadmap === 'true') return 'roadmap_interviews';
+  if (req.query.isTutor === 'true') return 'tutor_interviews';
+  return 'interviews';
+};
 
 // Validates Firestore document IDs to prevent path traversal / malformed IDs
 function isValidDocId(id) {
