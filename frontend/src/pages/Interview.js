@@ -9,6 +9,7 @@ import InterviewSetup  from '../components/InterviewSetup';
 import { useVoiceToText }     from '../hooks/useVoiceToText';
 import { useSessionPersist }  from '../hooks/useSessionPersist';
 import { useInterviewTimer }  from '../hooks/useInterviewTimer';
+import { useLoopPersist }     from '../hooks/useLoopPersist';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import CodeEditor from '../components/CodeEditor';
 import { TYPE_CONFIG } from '../utils/constants';
@@ -29,6 +30,8 @@ export default function Interview() {
   const isTutor      = config?.isTutor || false;
 
   const userName = user?.displayName?.split(' ')[0] || user?.email?.split('@')[0] || 'there';
+  
+  const { updateLoopRound } = useLoopPersist();
 
   // ── Session persistence (survives page refresh) ─────────────────────
   const persistenceId = sessionIdFromUrl || (loopId ? `loop_${loopId}_${roundIndex}` : type);
@@ -180,13 +183,17 @@ export default function Interview() {
         questionLink:  response.questionLink  || null,
       };
       saveSession(newSessionId, type, cfg.model, updatedMessages, meta, !!loopId).catch(console.error);
+
+      if (loopId) {
+        updateLoopRound(loopId, roundIndex, 'in-progress', null, newSessionId).catch(console.error);
+      }
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to connect to the AI interviewer. Please check your connection.');
     } finally {
       setIsLoading(false);
       setTimeout(() => inputRef.current?.focus(), 100);
     }
-  }, [type, userName, buildInitialMessage, location.pathname]);
+  }, [type, userName, buildInitialMessage, location.pathname, loopId, roundIndex, updateLoopRound]);
 
   // ── Zombie LocalStorage Bug Fix ───────────────────────────────────────
   // If the app crashed during session start, the user is left on a blank interview page.
