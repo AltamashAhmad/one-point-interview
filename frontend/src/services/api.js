@@ -132,6 +132,21 @@ export async function getHistory(options = {}) {
 }
 
 /**
+ * Archive active sessions for a specific interview type.
+ * @param {string} interviewType
+ * @param {Object} options - { isLoop, isRoadmap, isTutor }
+ */
+export async function archiveSession(interviewType, options = {}) {
+  const headers = await getHeaders();
+  const payload = { interviewType };
+  if (options.questionTitle) {
+    payload.questionTitle = options.questionTitle;
+  }
+  const { data } = await apiClient.post(`/api/history/archive${buildHistoryQuery(options)}`, payload, { headers });
+  return data;
+}
+
+/**
  * Fetch a specific interview session by ID.
  * @param {string} id
  */
@@ -154,6 +169,21 @@ export async function saveSession(sessionId, interviewType, modelUsed, messages,
   const { data } = await apiClient.post(
     `/api/history${buildHistoryQuery(options)}`,
     { sessionId, interviewType, modelUsed, messages, ...meta },
+    { headers }
+  );
+  return data;
+}
+
+/**
+ * Archive old active sessions of a given type.
+ * @param {string} interviewType 
+ * @param {Object} options 
+ */
+export async function archiveOldSessions(interviewType, options = {}) {
+  const headers = await getHeaders();
+  const { data } = await apiClient.post(
+    `/api/history/archive${buildHistoryQuery(options)}`,
+    { interviewType },
     { headers }
   );
   return data;
@@ -283,6 +313,15 @@ export async function getMyProfile() {
 export async function toggleUncheckQuestion(questionTitle, unchecked) {
   const headers = await getHeaders();
   const { data } = await apiClient.put('/api/users/me/uncheck', { questionTitle, unchecked }, { headers });
+  return data;
+}
+
+/**
+ * Toggle the manually completed status of a question.
+ */
+export async function toggleManualComplete(questionTitle, isCompleted) {
+  const headers = await getHeaders();
+  const { data } = await apiClient.put('/api/users/me/manual-complete', { questionTitle, isCompleted }, { headers });
   return data;
 }
 
