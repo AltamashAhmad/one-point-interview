@@ -82,7 +82,7 @@ async function generatePrimaryResponse(messages, systemPrompt, modelId) {
   // Add timeout to prevent indefinite hangs
   const timeoutMs = 90_000;
   const completion = await Promise.race([
-    primaryClient.chat.completions.create({
+    primaryService.chat.completions.create({
       model:              modelId,
       messages:           primaryAiMessages,
       temperature:        0.7,

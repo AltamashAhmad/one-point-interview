@@ -181,6 +181,41 @@ export default function Landing({ adminPromptMode }) {
 
   return (
     <div className="landing">
+      {adminPromptMode && (
+        <div style={{
+          background: 'linear-gradient(90deg, #ef4444 0%, #b91c1c 100%)',
+          color: 'white',
+          padding: '12px 20px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          fontWeight: 'bold',
+          boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)',
+          zIndex: 1000,
+          position: 'sticky',
+          top: 0
+        }}>
+          <div>
+            <span style={{ marginRight: '10px', fontSize: '1.2rem' }}>🛠️</span>
+            ADMIN PROMPT GENERATOR MODE: Clicking any interview card will generate an AI prompt instead of starting an interview.
+          </div>
+          <button 
+            onClick={() => navigate('/')}
+            style={{
+              background: 'white',
+              color: '#b91c1c',
+              border: 'none',
+              padding: '6px 12px',
+              borderRadius: '4px',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              fontSize: '0.9rem'
+            }}
+          >
+            Exit Mode
+          </button>
+        </div>
+      )}
       {/* Navbar */}
       <nav className="navbar">
         <div className="navbar-brand" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
@@ -260,18 +295,18 @@ export default function Landing({ adminPromptMode }) {
             <h2>🏢 Mock It: Full Company Interview Loop</h2>
             <p>Simulate a complete 4-round FAANG onsite loop (2x DSA, 1x System Design, 1x Managerial). End-to-end evaluation.</p>
           </div>
-          <button className="btn btn-outline" style={{ borderColor: 'white', color: 'white' }}>
+          <button className="btn btn-outline" style={{ borderColor: 'var(--purple)', color: 'var(--purple)' }}>
             Setup Loop →
           </button>
         </div>
 
         {/* Roadmap Banner */}
-        <div className="loop-banner" style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', marginTop: '16px' }} onClick={() => navigate(adminPromptMode ? '/admin/prompts/roadmap' : '/roadmap')}>
+        <div className="loop-banner" style={{ background: 'linear-gradient(135deg, var(--green-glow) 0%, rgba(16, 185, 129, 0.05) 100%)', borderColor: 'var(--green)', marginTop: '16px' }} onClick={() => navigate(adminPromptMode ? '/admin/prompts/roadmap' : '/roadmap')}>
           <div className="loop-banner-content">
             <h2>🗺️ NeetCode 150 Roadmap</h2>
             <p>Master Data Structures & Algorithms step-by-step. Track your progress and practice with guided AI Tutor dry runs or Mock Interviews.</p>
           </div>
-          <button className="btn btn-outline" style={{ borderColor: 'white', color: 'white' }}>
+          <button className="btn btn-outline" style={{ borderColor: 'var(--green)', color: 'var(--green)' }}>
             View Roadmap →
           </button>
         </div>
