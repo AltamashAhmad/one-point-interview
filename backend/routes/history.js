@@ -385,6 +385,9 @@ router.post('/:id/notes', verifyToken, async (req, res, next) => {
 
     const systemPrompt = `You are an expert Computer Science tutor.
 Your task is to analyze the following interview transcript and generate comprehensive, personalized revision notes for the candidate in Markdown format.
+These notes should be highly detailed and tailored specifically based on the candidate's conversation, reasoning, and mistakes.
+
+${data.language ? `IMPORTANT: The user selected the programming language: **${data.language}**. All code examples, optimal solutions, and syntax must be written in **${data.language}**.` : ''}
 
 The notes MUST include the following sections exactly:
 ### 1. Intuition & Approach
@@ -397,7 +400,7 @@ The notes MUST include the following sections exactly:
 (Explain the thought process to move from brute force to optimal)
 
 ### 4. Optimal Solution
-(Provide the final code and its complexity)
+(Provide the final code and its complexity. Provide well-commented, complete code)
 
 Format the output strictly as a Markdown document. Do not wrap the whole response in a JSON object.
 

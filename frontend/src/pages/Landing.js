@@ -181,6 +181,41 @@ export default function Landing({ adminPromptMode }) {
 
   return (
     <div className="landing">
+      {adminPromptMode && (
+        <div style={{
+          background: 'linear-gradient(90deg, #ef4444 0%, #b91c1c 100%)',
+          color: 'white',
+          padding: '12px 20px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          fontWeight: 'bold',
+          boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)',
+          zIndex: 1000,
+          position: 'sticky',
+          top: 0
+        }}>
+          <div>
+            <span style={{ marginRight: '10px', fontSize: '1.2rem' }}>🛠️</span>
+            ADMIN PROMPT GENERATOR MODE: Clicking any interview card will generate an AI prompt instead of starting an interview.
+          </div>
+          <button 
+            onClick={() => navigate('/')}
+            style={{
+              background: 'white',
+              color: '#b91c1c',
+              border: 'none',
+              padding: '6px 12px',
+              borderRadius: '4px',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              fontSize: '0.9rem'
+            }}
+          >
+            Exit Mode
+          </button>
+        </div>
+      )}
       {/* Navbar */}
       <nav className="navbar">
         <div className="navbar-brand" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
