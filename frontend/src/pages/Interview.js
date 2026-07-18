@@ -31,8 +31,6 @@ export default function Interview() {
   const userName = user?.displayName?.split(' ')[0] || user?.email?.split('@')[0] || 'there';
 
   // ── Session persistence (survives page refresh) ─────────────────────
-  const loopId = searchParams.get('loopId');
-  const roundIndex = searchParams.get('roundIndex');
   const persistenceId = sessionIdFromUrl || (loopId ? `loop_${loopId}_${roundIndex}` : type);
   const { persist, restore, clear } = useSessionPersist(persistenceId);
 
