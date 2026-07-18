@@ -126,9 +126,9 @@ export async function getHistory() {
  * Fetch a specific interview session by ID.
  * @param {string} id
  */
-export async function getHistoryById(id) {
+export async function getHistoryById(id, isLoop = false) {
   const headers = await getHeaders();
-  const { data } = await apiClient.get(`/api/history/${id}`, { headers });
+  const { data } = await apiClient.get(`/api/history/${id}?isLoop=${isLoop}`, { headers });
   return data.interview;
 }
 
@@ -140,10 +140,10 @@ export async function getHistoryById(id) {
  * @param {Array}  messages
  * @param {Object} [meta] - { company, difficulty, language, questionTitle, questionLink }
  */
-export async function saveSession(sessionId, interviewType, modelUsed, messages, meta = {}) {
+export async function saveSession(sessionId, interviewType, modelUsed, messages, meta = {}, isLoop = false) {
   const headers = await getHeaders();
   const { data } = await apiClient.post(
-    '/api/history',
+    `/api/history?isLoop=${isLoop}`,
     { sessionId, interviewType, modelUsed, messages, ...meta },
     { headers }
   );
@@ -154,9 +154,9 @@ export async function saveSession(sessionId, interviewType, modelUsed, messages,
  * Delete a specific interview session by ID.
  * @param {string} id
  */
-export async function deleteSession(id) {
+export async function deleteSession(id, isLoop = false) {
   const headers = await getHeaders();
-  const { data } = await apiClient.delete(`/api/history/${id}`, { headers });
+  const { data } = await apiClient.delete(`/api/history/${id}?isLoop=${isLoop}`, { headers });
   return data;
 }
 
@@ -172,27 +172,27 @@ export async function pinSession(id) {
 /**
  * Generate and fetch the scorecard for an interview session.
  */
-export async function generateScorecard(sessionId, model) {
+export async function generateScorecard(sessionId, model, isLoop = false) {
   const headers = await getHeaders();
-  const { data } = await apiClient.post(`/api/history/${sessionId}/scorecard`, { model }, { headers });
+  const { data } = await apiClient.post(`/api/history/${sessionId}/scorecard?isLoop=${isLoop}`, { model }, { headers });
   return data.scorecard;
 }
 
 /**
  * Generate AI revision notes for an interview session.
  */
-export async function generateNotes(sessionId, model) {
+export async function generateNotes(sessionId, model, isLoop = false) {
   const headers = await getAuthHeader();
-  const { data } = await axios.post(`${API_BASE}/api/history/${sessionId}/notes`, { model }, { headers });
+  const { data } = await axios.post(`${API_BASE}/api/history/${sessionId}/notes?isLoop=${isLoop}`, { model }, { headers });
   return data.notes;
 }
 
 /**
  * Update user-edited revision notes.
  */
-export async function updateNotes(sessionId, notes) {
+export async function updateNotes(sessionId, notes, isLoop = false) {
   const headers = await getAuthHeader();
-  const { data } = await axios.put(`${API_BASE}/api/history/${sessionId}/notes`, { notes }, { headers });
+  const { data } = await axios.put(`${API_BASE}/api/history/${sessionId}/notes?isLoop=${isLoop}`, { notes }, { headers });
   return data.notes;
 }
 

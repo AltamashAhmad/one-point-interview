@@ -35,7 +35,7 @@ export default function Scorecard() {
   useEffect(() => {
     async function fetchScorecard() {
       try {
-        const interview = await getHistoryById(sessionId);
+        const interview = await getHistoryById(sessionId, !!loopId);
         if (!interview) {
           throw new Error('Interview not found');
         }

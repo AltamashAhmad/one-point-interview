@@ -9,6 +9,8 @@ const { generateRouterResponse, isRouterModel } = require('../services/routerAi'
 
 const db = admin.firestore();
 
+const getCollectionName = (req) => req.query.isLoop === 'true' ? 'loop_interviews' : 'interviews';
+
 // Validates Firestore document IDs to prevent path traversal / malformed IDs
 function isValidDocId(id) {
   if (!id || typeof id !== 'string') return false;
@@ -29,7 +31,7 @@ router.use(verifyToken, enforceGlobalStatus);
 router.get('/', async (req, res, next) => {
   try {
     const userId = req.user.uid;
-    const snapshot = await db.collection('interviews')
+    const snapshot = await db.collection(getCollectionName(req))
       .where('userId', '==', userId)
       .get();
 
@@ -60,7 +62,7 @@ router.get('/:id', async (req, res, next) => {
     if (!isValidDocId(req.params.id)) {
       return res.status(400).json({ error: 'Invalid session ID.' });
     }
-    const docRef = db.collection('interviews').doc(req.params.id);
+    const docRef = db.collection(getCollectionName(req)).doc(req.params.id);
     const doc = await docRef.get();
 
     if (!doc.exists) {
@@ -96,7 +98,7 @@ router.post('/', async (req, res, next) => {
       return res.status(400).json({ error: 'Invalid session ID.' });
     }
 
-    const docRef = db.collection('interviews').doc(sessionId);
+    const docRef = db.collection(getCollectionName(req)).doc(sessionId);
     const doc = await docRef.get();
 
     const timestamp = admin.firestore.FieldValue.serverTimestamp();
@@ -150,7 +152,7 @@ router.put('/:id/pin', async (req, res, next) => {
       return res.status(400).json({ error: 'Invalid session ID.' });
     }
 
-    const docRef = db.collection('interviews').doc(req.params.id);
+    const docRef = db.collection(getCollectionName(req)).doc(req.params.id);
     const doc = await docRef.get();
 
     if (!doc.exists) {
@@ -165,7 +167,7 @@ router.put('/:id/pin', async (req, res, next) => {
 
     // If we are pinning it, check if they already have 3 pinned
     if (!currentPinStatus) {
-      const pinnedSnapshot = await db.collection('interviews')
+      const pinnedSnapshot = await db.collection(getCollectionName(req))
         .where('userId', '==', userId)
         .where('isPinned', '==', true)
         .get();
@@ -196,7 +198,7 @@ router.delete('/:id', async (req, res, next) => {
     if (!isValidDocId(req.params.id)) {
       return res.status(400).json({ error: 'Invalid session ID.' });
     }
-    const docRef = db.collection('interviews').doc(req.params.id);
+    const docRef = db.collection(getCollectionName(req)).doc(req.params.id);
     const doc = await docRef.get();
 
     if (!doc.exists) {
@@ -224,7 +226,7 @@ router.post('/:id/scorecard', checkUserAccess, async (req, res, next) => {
     if (!isValidDocId(req.params.id)) {
       return res.status(400).json({ error: 'Invalid session ID.' });
     }
-    const docRef = db.collection('interviews').doc(req.params.id);
+    const docRef = db.collection(getCollectionName(req)).doc(req.params.id);
     const doc = await docRef.get();
 
     if (!doc.exists) {
@@ -364,7 +366,7 @@ router.post('/:id/notes', verifyToken, async (req, res, next) => {
   try {
     const userId = req.user.uid;
     if (!isValidDocId(req.params.id)) return res.status(400).json({ error: 'Invalid session ID.' });
-    const docRef = db.collection('interviews').doc(req.params.id);
+    const docRef = db.collection(getCollectionName(req)).doc(req.params.id);
     const doc = await docRef.get();
 
     if (!doc.exists) return res.status(404).json({ error: 'Interview not found' });
@@ -444,7 +446,7 @@ router.put('/:id/notes', verifyToken, async (req, res, next) => {
     if (typeof notes !== 'string') return res.status(400).json({ error: 'Notes must be a string' });
     if (!isValidDocId(req.params.id)) return res.status(400).json({ error: 'Invalid session ID.' });
     
-    const docRef = db.collection('interviews').doc(req.params.id);
+    const docRef = db.collection(getCollectionName(req)).doc(req.params.id);
     const doc = await docRef.get();
 
     if (!doc.exists) return res.status(404).json({ error: 'Interview not found' });

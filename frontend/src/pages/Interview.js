@@ -179,7 +179,7 @@ export default function Interview() {
         questionTitle: response.questionTitle || null,
         questionLink:  response.questionLink  || null,
       };
-      saveSession(newSessionId, type, cfg.model, updatedMessages, meta).catch(console.error);
+      saveSession(newSessionId, type, cfg.model, updatedMessages, meta, !!loopId).catch(console.error);
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to connect to the AI interviewer. Please check your connection.');
     } finally {
@@ -208,7 +208,7 @@ export default function Interview() {
       }
 
       setIsLoading(true);
-      getHistoryById(sId).then(data => {
+      getHistoryById(sId, !!loopId).then(data => {
         setMessages(data.messages || []);
         setSessionId(sId);
         setSessionConfig({
@@ -273,7 +273,7 @@ export default function Interview() {
           p.set('session', activeSession.id);
           window.history.replaceState({}, document.title, `${location.pathname}?${p.toString()}`);
           setIsLoading(true);
-          getHistoryById(activeSession.id).then(data => {
+          getHistoryById(activeSession.id, !!loopId).then(data => {
             setMessages(data.messages || []);
             setSessionId(activeSession.id);
             setSessionConfig({
@@ -386,7 +386,7 @@ export default function Interview() {
       ];
 
       setMessages(finalMessages);
-      saveSession(sessionId, type, selectedModel, finalMessages).catch(console.error);
+      saveSession(sessionId, type, selectedModel, finalMessages, {}, !!loopId).catch(console.error);
     } catch (err) {
       const msg = err.response?.data?.error || err.message || 'Failed to audit code. Please try again.';
       setError(msg);
@@ -423,7 +423,7 @@ export default function Interview() {
 
       const finalMessages = [...newMessages, { role: 'assistant', content: response.content }];
       setMessages(finalMessages);
-      saveSession(sessionId, type, selectedModel, finalMessages).catch(console.error);
+      saveSession(sessionId, type, selectedModel, finalMessages, {}, !!loopId).catch(console.error);
     } catch (err) {
       // If we hit a quota limit, tell the AuthContext to re-fetch the profile immediately
       // This will instantly trigger the AccessWall full-screen overlay from App.js!
@@ -519,7 +519,7 @@ export default function Interview() {
 
     setIsGeneratingScorecard(true);
     try {
-      await generateScorecard(sessionId, scorecardModel);
+      await generateScorecard(sessionId, scorecardModel, !!loopId);
       clearSessionArtifacts(sessionId); // remove timer + editor code for this session
       clear(); // Wipe local storage session data upon successful completion
       const queryParams = loopId ? `?loopId=${loopId}&roundIndex=${roundIndex}` : '';
