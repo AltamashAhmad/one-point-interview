@@ -38,7 +38,8 @@ export default function Interview() {
   const { updateLoopRound } = useLoopPersist();
 
   // ── Session persistence (survives page refresh) ─────────────────────
-  const persistenceId = sessionIdFromUrl || (loopId ? `loop_${loopId}_${roundIndex}` : type);
+  const baseType = isRoadmap ? `roadmap_${type}` : (isTutor ? `tutor_${type}` : type);
+  const persistenceId = sessionIdFromUrl || (loopId ? `loop_${loopId}_${roundIndex}` : baseType);
   const { persist, restore, clear } = useSessionPersist(persistenceId);
 
   // Restore from localStorage on first render ONLY (lazy state initializer)
