@@ -143,7 +143,9 @@ export default function Interview() {
     setSessionId(newSessionId);
     
     // Update URL to reflect the active session
-    window.history.replaceState({}, document.title, `${location.pathname}?session=${newSessionId}`);
+    const p = new URLSearchParams(window.location.search);
+    p.set('session', newSessionId);
+    window.history.replaceState({}, document.title, `${location.pathname}?${p.toString()}`);
 
     const initialMessage  = buildInitialMessage(cfg);
     const initialMessages = [initialMessage];
@@ -200,7 +202,9 @@ export default function Interview() {
     const sId = location.state?.resumeSessionId || sessionIdFromUrl;
     if (setupPhase && sId && messages.length === 0 && !error) {
       if (location.state?.resumeSessionId) {
-        window.history.replaceState({}, document.title, `${location.pathname}?session=${sId}`);
+        const p = new URLSearchParams(window.location.search);
+        p.set('session', sId);
+        window.history.replaceState({}, document.title, `${location.pathname}?${p.toString()}`);
       }
 
       setIsLoading(true);
@@ -225,7 +229,9 @@ export default function Interview() {
         setSetupPhase(false);
       }).catch(err => {
         console.error('Failed to restore session from DB:', err);
-        window.history.replaceState({}, document.title, location.pathname);
+        const p = new URLSearchParams(window.location.search);
+        p.delete('session');
+        window.history.replaceState({}, document.title, `${location.pathname}?${p.toString()}`);
       }).finally(() => {
         setIsLoading(false);
         setIsCheckingHistory(false);
@@ -233,6 +239,14 @@ export default function Interview() {
     } else if (setupPhase && !sId && !hasCheckedAutoResume) {
       setHasCheckedAutoResume(true);
       setIsCheckingHistory(true);
+      
+      if (searchParams.get('loopId')) {
+        // Do not auto-resume global sessions if this is a loop round
+        setIsCheckingHistory(false);
+        setIsLoading(false);
+        return;
+      }
+
       // Global auto-resume from history
       getHistory().then(historyRecords => {
         let activeSession;
@@ -255,7 +269,9 @@ export default function Interview() {
         }
         
         if (activeSession) {
-          window.history.replaceState({}, document.title, `${location.pathname}?session=${activeSession.id}`);
+          const p = new URLSearchParams(window.location.search);
+          p.set('session', activeSession.id);
+          window.history.replaceState({}, document.title, `${location.pathname}?${p.toString()}`);
           setIsLoading(true);
           getHistoryById(activeSession.id).then(data => {
             setMessages(data.messages || []);
@@ -289,7 +305,9 @@ export default function Interview() {
             company: '',
             questionSeed: seed
           };
-          window.history.replaceState({}, document.title, location.pathname);
+          const p = new URLSearchParams(window.location.search);
+          p.delete('session');
+          window.history.replaceState({}, document.title, `${location.pathname}?${p.toString()}`);
           clearSessionArtifacts(sessionId);
           clear();
           setSetupPhase(false);
@@ -448,7 +466,9 @@ export default function Interview() {
 
     clearSessionArtifacts(sessionId); // remove old timer + code before resetting
     clear();                     // wipe localStorage
-    window.history.replaceState({}, document.title, location.pathname); // clear session from URL
+    const p = new URLSearchParams(window.location.search);
+    p.delete('session');
+    window.history.replaceState({}, document.title, `${location.pathname}?${p.toString()}`); // clear session from URL
     setHasCheckedAutoResume(true); // Don't auto-resume after manually requesting a new session
     setMessages([]);
     setInput('');
