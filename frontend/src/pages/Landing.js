@@ -295,18 +295,18 @@ export default function Landing({ adminPromptMode }) {
             <h2>🏢 Mock It: Full Company Interview Loop</h2>
             <p>Simulate a complete 4-round FAANG onsite loop (2x DSA, 1x System Design, 1x Managerial). End-to-end evaluation.</p>
           </div>
-          <button className="btn btn-outline" style={{ borderColor: 'white', color: 'white' }}>
+          <button className="btn btn-outline" style={{ borderColor: 'var(--purple)', color: 'var(--purple)' }}>
             Setup Loop →
           </button>
         </div>
 
         {/* Roadmap Banner */}
-        <div className="loop-banner" style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', marginTop: '16px' }} onClick={() => navigate(adminPromptMode ? '/admin/prompts/roadmap' : '/roadmap')}>
+        <div className="loop-banner" style={{ background: 'linear-gradient(135deg, var(--green-glow) 0%, rgba(16, 185, 129, 0.05) 100%)', borderColor: 'var(--green)', marginTop: '16px' }} onClick={() => navigate(adminPromptMode ? '/admin/prompts/roadmap' : '/roadmap')}>
           <div className="loop-banner-content">
             <h2>🗺️ NeetCode 150 Roadmap</h2>
             <p>Master Data Structures & Algorithms step-by-step. Track your progress and practice with guided AI Tutor dry runs or Mock Interviews.</p>
           </div>
-          <button className="btn btn-outline" style={{ borderColor: 'white', color: 'white' }}>
+          <button className="btn btn-outline" style={{ borderColor: 'var(--green)', color: 'var(--green)' }}>
             View Roadmap →
           </button>
         </div>

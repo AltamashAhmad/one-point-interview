@@ -1,7 +1,15 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { sendMessage, saveSession, generateScorecard, getHistoryById, getHistory, auditCode } from '../services/api';
+import { 
+  sendMessage, 
+  saveSession, 
+  generateScorecard, 
+  getHistoryById, 
+  getHistory, 
+  auditCode, 
+  archiveSession 
+} from '../services/api';
 import MessageBubble from '../components/MessageBubble';
 import TypingIndicator from '../components/TypingIndicator';
 import ModelSelector, { AVAILABLE_MODELS, DEFAULT_MODEL } from '../components/ModelSelector';
@@ -70,6 +78,9 @@ export default function Interview() {
   const [hasCheckedAutoResume, setHasCheckedAutoResume] = useState(false);
   const [isCheckingHistory, setIsCheckingHistory] = useState(true);
   const [showConfirmEnd, setShowConfirmEnd] = useState(false);
+  const [showResumeModal, setShowResumeModal] = useState(false);
+  const [pendingSession, setPendingSession] = useState(null);
+  const [pendingAutoStartCfg, setPendingAutoStartCfg] = useState(null);
 
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -252,63 +263,32 @@ export default function Interview() {
       setHasCheckedAutoResume(true);
       setIsCheckingHistory(true);
       
-      if (searchParams.get('loopId') || isRoadmap) {
-        // Do not auto-resume global sessions if this is a loop round or roadmap session
-        setIsCheckingHistory(false);
-        setIsLoading(false);
-        return;
-      }
+      const seed = location.state?.questionSeed;
+      const isAutoStart = location.state?.autoStart && seed;
+      
+      getHistory({ isRoadmap, isTutor }).then(historyRecords => {
+        const activeSession = historyRecords.find(h => 
+          h.interviewType === type && 
+          (!seed || h.questionTitle === seed) && 
+          !h.isArchived && 
+          !h.scorecard
+        );
 
-      // Global auto-resume from history (only normal mock interviews, no loops/roadmap/tutor)
-      getHistory().then(historyRecords => {
-        let activeSession;
-        const seed = location.state?.questionSeed;
-        
-        if (isTutor) {
-          activeSession = historyRecords.find(h => 
-            h.interviewType === type && (!seed || h.questionTitle === seed)
-          );
-        } else {
-          activeSession = historyRecords.find(h => {
-            if (h.interviewType !== type || h.scorecard) return false;
-            if (seed && h.questionTitle !== seed) return false;
-            // Check if within 45 mins (or relevant timer duration)
-            const duration = (type === 'lld' || type === 'systemDesign') ? 60 * 60 * 1000 : 45 * 60 * 1000;
-            const ts = h.startedAt || h.updatedAt;
-            const startedMs = ts ? (ts._seconds ? ts._seconds * 1000 : new Date(ts).getTime()) : Date.now();
-            return (Date.now() - startedMs) < duration;
-          });
-        }
-        
         if (activeSession) {
-          const p = new URLSearchParams(window.location.search);
-          p.set('session', activeSession.id);
-          window.history.replaceState({}, document.title, `${location.pathname}?${p.toString()}`);
-          setIsLoading(true);
-          getHistoryById(activeSession.id, apiOptions).then(data => {
-            setMessages(data.messages || []);
-            setSessionId(activeSession.id);
-            setSessionConfig({
-              model: data.modelUsed,
-              company: data.company,
-              difficulty: data.difficulty,
-              language: data.language,
-              questionSeed: data.questionTitle
+          setPendingSession(activeSession);
+          if (isAutoStart) {
+            setPendingAutoStartCfg({
+              model: location.state.model || DEFAULT_MODEL.id,
+              scorecardModel: isTutor ? null : DEFAULT_MODEL.id,
+              difficulty: 'ANY',
+              language: location.state.language || 'Java',
+              company: '',
+              questionSeed: seed
             });
-            setSelectedModel(data.modelUsed);
-            if (data.questionTitle) {
-              setQuestionMeta({
-                title: data.questionTitle,
-                link: data.questionLink,
-                companyName: data.company
-              });
-            }
-            setSetupPhase(false);
-          }).catch(console.error).finally(() => {
-            setIsLoading(false);
-            setIsCheckingHistory(false);
-          });
-        } else if (location.state?.autoStart && seed) {
+          }
+          setShowResumeModal(true);
+          setIsCheckingHistory(false);
+        } else if (isAutoStart) {
           const cfg = {
             model: location.state.model || DEFAULT_MODEL.id,
             scorecardModel: isTutor ? null : DEFAULT_MODEL.id,
@@ -320,11 +300,10 @@ export default function Interview() {
           const p = new URLSearchParams(window.location.search);
           p.delete('session');
           window.history.replaceState({}, document.title, `${location.pathname}?${p.toString()}`);
-          clearSessionArtifacts(sessionId);
-          clear();
+          
+          setIsCheckingHistory(false);
           setSetupPhase(false);
           startInterview(cfg);
-          setIsCheckingHistory(false);
         } else {
           setIsCheckingHistory(false);
         }
@@ -473,7 +452,16 @@ export default function Interview() {
 
 
   // ── New session ───────────────────────────────────────────────────────
-  const handleNewSession = () => {
+  const handleNewSession = async () => {
+    try {
+      await archiveSession(type, { 
+        isRoadmap, 
+        isTutor,
+        questionTitle: sessionConfig?.questionSeed || questionMeta?.title 
+      });
+    } catch (e) {
+      console.error("Failed to archive session", e);
+    }
     const configToRestart = sessionConfig?.questionSeed ? { ...sessionConfig } : null;
 
     clearSessionArtifacts(sessionId); // remove old timer + code before resetting
@@ -608,6 +596,63 @@ export default function Interview() {
           <div className="interview-loading" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
             <div className="spinner" style={{ width: '40px', height: '40px', border: '3px solid var(--border-color)', borderTopColor: 'var(--type-color)', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
             <p style={{ marginTop: '1rem', color: 'var(--text-muted)' }}>Loading session...</p>
+          </div>
+        ) : showResumeModal && pendingSession ? (
+          <div style={{ flex: 1, position: 'relative' }}>
+            <div className="modal-overlay">
+              <div className="modal-card resume-modal">
+                <h3 style={{ marginTop: 0, marginBottom: '15px' }}>Resume Session?</h3>
+                <p>You have an incomplete session for <strong>{pendingSession.questionTitle || TYPE_CONFIG[type]?.label || type}</strong>.</p>
+                <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+                  Would you like to resume where you left off, or archive it and start a new session?
+                </p>
+                <div className="modal-actions" style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
+                  <button 
+                    className="btn btn-primary" 
+                    style={{ flex: 1 }}
+                    onClick={() => {
+                      const p = new URLSearchParams(window.location.search);
+                      p.set('session', pendingSession.id);
+                      window.history.replaceState({}, document.title, `${location.pathname}?${p.toString()}`);
+                      setShowResumeModal(false);
+                      setPendingSession(null);
+                      window.location.reload();
+                    }}
+                  >
+                    Resume
+                  </button>
+                  <button 
+                    className="btn btn-outline" 
+                    style={{ flex: 1 }}
+                    onClick={async () => {
+                      try {
+                        await archiveSession(type, { 
+                          isRoadmap, 
+                          isTutor,
+                          questionTitle: pendingSession?.questionTitle
+                        });
+                      } catch (e) {
+                        console.error("Failed to archive session", e);
+                      }
+                      setShowResumeModal(false);
+                      setPendingSession(null);
+                      if (pendingAutoStartCfg) {
+                        const p = new URLSearchParams(window.location.search);
+                        p.delete('session');
+                        window.history.replaceState({}, document.title, `${location.pathname}?${p.toString()}`);
+                        setIsCheckingHistory(false);
+                        setSetupPhase(false);
+                        startInterview(pendingAutoStartCfg);
+                      } else {
+                        setIsCheckingHistory(false);
+                      }
+                    }}
+                  >
+                    Start Fresh
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         ) : (
           <InterviewSetup interviewType={type} typeConfig={config} onBegin={handleBegin} />

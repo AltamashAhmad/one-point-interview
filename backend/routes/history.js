@@ -45,13 +45,84 @@ router.get('/', async (req, res, next) => {
       interviews.push({ id: doc.id, ...doc.data() });
     });
 
+    const getTime = (ts) => {
+      if (!ts) return 0;
+      if (typeof ts.toMillis === 'function') return ts.toMillis();
+      if (ts._seconds) return ts._seconds * 1000;
+      return new Date(ts).getTime() || 0;
+    };
+
     interviews.sort((a, b) => {
-      const tA = a.updatedAt?.toMillis?.() || 0;
-      const tB = b.updatedAt?.toMillis?.() || 0;
-      return tB - tA; // desc
+      const tsA = a.updatedAt || a.startedAt;
+      const tsB = b.updatedAt || b.startedAt;
+      return getTime(tsB) - getTime(tsA); // desc
     });
 
     res.json({ interviews });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * POST /api/history/archive
+ * Archive any active (non-scorecard, non-archived) sessions for a specific interview type.
+ * This ensures we only have one active session at a time.
+ */
+router.post('/archive', async (req, res, next) => {
+  try {
+    const userId = req.user.uid;
+    const { interviewType, questionTitle } = req.body;
+    const collectionName = getCollectionName(req);
+    
+    let query = db.collection(collectionName)
+      .where('userId', '==', userId)
+      .where('interviewType', '==', interviewType);
+      
+    if (questionTitle) {
+      query = query.where('questionTitle', '==', questionTitle);
+    }
+    
+    const snapshot = await query.get();
+      
+    const activeSessions = [];
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      if (!data.scorecard && !data.isArchived) {
+        activeSessions.push({ doc, data });
+      }
+    });
+
+    const getTime = (ts) => {
+      if (!ts) return 0;
+      if (typeof ts.toMillis === 'function') return ts.toMillis();
+      if (ts._seconds) return ts._seconds * 1000;
+      return new Date(ts).getTime() || 0;
+    };
+
+    activeSessions.sort((a, b) => {
+      const tsA = a.data.updatedAt || a.data.startedAt;
+      const tsB = b.data.updatedAt || b.data.startedAt;
+      return getTime(tsB) - getTime(tsA);
+    });
+
+    const batch = db.batch();
+    let archiveCount = 0;
+    
+    // Keep the most recent active session (index 0), archive the rest
+    for (let i = 1; i < activeSessions.length; i++) {
+      batch.update(activeSessions[i].doc.ref, { 
+        isArchived: true, 
+        updatedAt: admin.firestore.FieldValue.serverTimestamp() 
+      });
+      archiveCount++;
+    }
+    
+    if (archiveCount > 0) {
+      await batch.commit();
+    }
+    
+    res.json({ success: true, archived: archiveCount });
   } catch (error) {
     next(error);
   }
